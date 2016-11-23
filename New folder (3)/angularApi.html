@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>Weather</title>
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<style type="text/css">
+#ContainWeather
+{
+  width: 100%;
+  height: auto;
+  background-color: #ccc;
+}
+#weatherDiv
+{
+  width: 100%;
+  height: auto;
+  background-color: #ccc;
+}
+table
+{
+  font-family: arial, sans-serif;
+  font-size:17px;
+  margin-left: 30px; 
+}
+.btnGetweather
+{
+  width: 280px;
+  height: 30px;
+  background-color: #ccccb3;
+}
+th
+{
+  color:black;
+  font-size:20px;
+}
+#weatherDetails
+{
+  width: 30%;
+  height: 370px;
+  background-color: white;
+  position: fixed;
+  margin-left: 830px;
+  margin-top: 200px;
+  color: black;
+  display: none;
+}
+</style>
+
+</head>
+
+<body ng-app="weather" ng-controller="myCtrl">
+
+  <div id="ContainWeather">
+    <div id="weatherDetails">
+      <table style="margin-top:30px;margin-left:60px;">
+        <caption style="color:#003300;font-size:37px; ">Weather details</caption>
+        <tr><td>Description</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>{{Wdescription}}</td><td><img src="{{icon}}"></td></tr>
+        <tr><td>Pressure</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>{{pressure}}</td></tr>
+        <tr><td>Humidity</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>{{humidity}}</td></tr>
+        <tr><td>Main</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>{{main}}</td></tr>
+        <tr><td>Temperature</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>{{degrees}}</td></tr>
+        <tr><td>Flag</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><img src="{{flag}}"></td></tr>
+      </table>
+    </div>
+    <div id="weatherDiv" >
+        <table id="dataTable">
+          <caption style="color:#003300;font-size:37px; ">Countries And their Capitals</caption>
+          <br>
+          <th>Country</th><th>Capital</th><th>Get weather</th>
+          <tr ng-repeat="x in Countries">
+            <td >{{ x.name }}</td>
+            <td class="cap">{{ x.capital }}</td>
+            <td><button id="{{x.capital}}+{{'*'+x.alpha2Code}}" class="btnGetweather" ng-click="showDetail($event)">get weather for: {{ x.capital }}</button></td>
+          </tr> 
+
+        </table>
+
+    </div>
+  </div>
+
+  <script type="text/javascript">
+
+    var app=angular.module("weather",[]);
+
+    var city="";
+    app.controller("myCtrl",function($scope,$http){
+
+      $http.get(" https://restcountries.eu/rest/v1/all")
+      .then(function(response){
+        $scope.Countries=response.data;
+        console.log(response.data);
+      });
+
+      $scope.showDetail = function(event)
+      {
+        $("#weatherDetails").show(1000);
+
+        var string=$(event.target).attr("id");
+        city=string.substring(string.indexOf(0,'*'));
+        var ct=string;
+        var alphaCode=string.substring(string.indexOf("*")+1);
+
+        $http.get("http://api.openweathermap.org/data/2.5/forecast/daily?q="+city+"&units=metric&appid=8c11fd893f110c902dabb2c1a2d5a867")
+        .then(function(response){
+
+          $scope.Wdescription=response.data.list[0].weather[0].description+"";
+          $scope.pressure=response.data.list[0].pressure;
+          $scope.humidity=response.data.list[0].humidity;
+          $scope.main=response.data.list[0].weather[0].main;
+          $scope.degrees=response.data.list[0].temp.max;
+
+          $scope.flag="http://www.geognos.com/api/en/countries/flag/"+alphaCode+".png";
+          $scope.icon="http://openweathermap.org/img/w/"+response.data.list[0].weather[0].icon+".png";
+          
+        });
+   
+      }
+    });
+  
+ 
+
+  </script>
+
+</body>
+</html>
